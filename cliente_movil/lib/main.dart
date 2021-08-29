@@ -1,108 +1,100 @@
+//import 'dart:convert';
+
 import 'package:cliente_movil/pages/principal.dart';
 import 'package:flutter/material.dart';
+//import 'package:flutter/services.dart';
+//import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(App());
+void main() => runApp(MyApp());
 
-class App extends StatelessWidget {
-  const App({key}) : super(key: key);
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      //Estilo de la aplicacion
       title: "Cono Superior",
-      home: Start(),
+      debugShowCheckedModeBanner: false,
+      home: MainPage(),
+      theme: ThemeData(accentColor: Colors.white70),
     );
   }
 }
 
-class Start extends StatefulWidget {
-  Start({key}) : super(key: key);
-
+class MainPage extends StatefulWidget {
   @override
-  _StartState createState() => _StartState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class _StartState extends State<Start> {
+class _MainPageState extends State<MainPage> {
+  late SharedPreferences sharedPreferences;
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  checkLoginStatus() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    if (sharedPreferences.getString("token") == null) {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (BuildContext context) => Start()),
+          (Route<dynamic> route) => false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: login(context),
+      appBar: AppBar(
+        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              sharedPreferences.clear();
+              // ignore: deprecated_member_use
+              sharedPreferences.commit();
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (BuildContext context) => Start()),
+                  (Route<dynamic> route) => false);
+            },
+            child: Text("Log Out", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      body: Center(child: Text("Main Page")),
+      drawer: Drawer(
+        child: new ListView(
+          children: <Widget>[
+            new UserAccountsDrawerHeader(
+              accountName: new Text('Menú Principal'),
+              accountEmail: new Text('Cono Superior'),
+              // decoration: new BoxDecoration(
+              //   image: new DecorationImage(
+              //     fit: BoxFit.fill,
+              //    // image: AssetImage('img/estiramiento.jpg'),
+              //   )
+              // ),
+            ),
+            new Divider(),
+            // new ListTile(
+            //   title: new Text("Add data"),
+            //   trailing: new Icon(Icons.fitness_center),
+            //   onTap: () => Navigator.of(context).push(new MaterialPageRoute(
+            //     builder: (BuildContext context) => AddData(),
+            //   )),
+            // ),
+            // new Divider(),
+            // new ListTile(
+            //   title: new Text("Mostrar listado"),
+            //   trailing: new Icon(Icons.help),
+            //   onTap: () => Navigator.of(context).push(new MaterialPageRoute(
+            //     builder: (BuildContext context) => ShowData(),
+            //   )),
+            // ),
+          ],
+        ),
+      ),
     );
   }
-}
-
-Widget login(BuildContext context) {
-  return Container(
-    decoration: BoxDecoration(
-        image: DecorationImage(
-            image: NetworkImage(
-                "https://cdn.pixabay.com/photo/2018/08/01/17/39/ice-cream-3577706_960_720.jpg"),
-            fit: BoxFit.cover)),
-    child: Center(
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        auth(),
-        email(),
-        password(),
-        SizedBox(
-          height: 10,
-        ),
-        btnlogin(context),
-      ],
-    )),
-  );
-}
-
-Widget auth() {
-  return Text(
-    "Usuario",
-    style: TextStyle(
-        color: Colors.white, fontSize: 35.0, fontWeight: FontWeight.bold),
-  );
-}
-
-Widget email() {
-  return Container(
-    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-    child: TextField(
-      decoration: InputDecoration(
-        hintText: "Correo",
-        fillColor: Colors.white,
-        filled: true,
-      ),
-    ),
-  );
-}
-
-Widget password() {
-  return Container(
-    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-    child: TextField(
-      obscureText: true,
-      decoration: InputDecoration(
-        hintText: "Contraseña",
-        fillColor: Colors.white,
-        filled: true,
-      ),
-    ),
-  );
-}
-
-Widget btnlogin(BuildContext context) {
-  return ElevatedButton(
-    //color: Colors.blueAccent,
-    //padding: EdgeInsets.symmetric(horizontal: 100, vertical: 10),
-    onPressed: () {
-      Navigator.push(context,
-          new MaterialPageRoute(builder: (context) => new Principal()));
-    },
-    child: Text(
-      "Ingresar",
-      style: TextStyle(fontSize: 25, color: Colors.white),
-    ),
-    style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(Colors.blueAccent)),
-  );
 }
