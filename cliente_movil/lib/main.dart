@@ -1,100 +1,164 @@
-//import 'dart:convert';
+import 'dart:convert';
 
-import 'package:cliente_movil/pages/principal.dart';
+import 'package:cliente_movil/pages/adminPage.dart';
+import 'package:cliente_movil/pages/clientPage.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
-//import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(App());
 
-class MyApp extends StatelessWidget {
+class App extends StatelessWidget {
+  const App({key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      //Estilo de la aplicacion
       title: "Cono Superior",
-      debugShowCheckedModeBanner: false,
-      home: MainPage(),
-      theme: ThemeData(accentColor: Colors.white70),
+      home: MyApp(),
     );
   }
 }
 
-class MainPage extends StatefulWidget {
+class MyApp extends StatefulWidget {
   @override
-  _MainPageState createState() => _MainPageState();
+  _MyAppState createState() => _MyAppState();
 }
 
-class _MainPageState extends State<MainPage> {
-  late SharedPreferences sharedPreferences;
-
-  @override
-  void initState() {
-    super.initState();
-    checkLoginStatus();
-  }
-
-  checkLoginStatus() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    if (sharedPreferences.getString("token") == null) {
-      Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (BuildContext context) => Start()),
-          (Route<dynamic> route) => false);
-    }
-  }
+class _MyAppState extends State<MyApp> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
+        .copyWith(statusBarColor: Colors.transparent));
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              sharedPreferences.clear();
-              // ignore: deprecated_member_use
-              sharedPreferences.commit();
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (BuildContext context) => Start()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Colors.blue, Colors.teal],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter),
+        ),
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : ListView(
+                children: [
+                  headerSection(),
+                  textSection(),
+                  buttonSection(),
+                ],
+              ),
+      ),
+    );
+  }
+
+  signIn(String email, pass) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    Map data = {'email': email, 'password': pass};
+    var jsonResponse = null;
+
+    var response = await http
+        .post(Uri.parse("http://192.168.100.7:8000/api/login"), body: data);
+    if (response.statusCode == 200) {
+      var datauser = json.decode(response.body);
+      jsonResponse = json.decode(response.body);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      if (jsonResponse != null) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (datauser['user']['type'] == 'admin') {
+          sharedPreferences.setString("token", jsonResponse['token']);
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (BuildContext context) => Admin()),
+              (Route<dynamic> route) => false);
+        } else if (datauser['user']['type'] == 'client') {
+          sharedPreferences.setString("token", jsonResponse['token']);
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (BuildContext context) => Client()),
+              (Route<dynamic> route) => false);
+        }
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      print(response.body);
+    }
+  }
+
+  Container buttonSection() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: 40.0,
+      padding: EdgeInsets.symmetric(horizontal: 15.0),
+      margin: EdgeInsets.only(top: 15.0),
+      child: ElevatedButton(
+        onPressed: emailController.text == "" || passwordController.text == ""
+            ? null
+            : () {
+                setState(() {
+                  _isLoading = true;
+                });
+                signIn(emailController.text, passwordController.text);
+              },
+        child: Text("Sign In", style: TextStyle(color: Colors.white70)),
+      ),
+    );
+  }
+
+  final TextEditingController emailController = new TextEditingController();
+  final TextEditingController passwordController = new TextEditingController();
+
+  Container textSection() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
+      child: Column(
+        children: <Widget>[
+          TextFormField(
+            controller: emailController,
+            cursorColor: Colors.white,
+            style: TextStyle(color: Colors.white70),
+            decoration: InputDecoration(
+              icon: Icon(Icons.email, color: Colors.white70),
+              hintText: "Email",
+              border: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white70)),
+              hintStyle: TextStyle(color: Colors.white70),
+            ),
+          ),
+          SizedBox(height: 30.0),
+          TextFormField(
+            controller: passwordController,
+            cursorColor: Colors.white,
+            obscureText: true,
+            style: TextStyle(color: Colors.white70),
+            decoration: InputDecoration(
+              icon: Icon(Icons.lock, color: Colors.white70),
+              hintText: "Password",
+              border: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white70)),
+              hintStyle: TextStyle(color: Colors.white70),
+            ),
           ),
         ],
       ),
-      body: Center(child: Text("Main Page")),
-      drawer: Drawer(
-        child: new ListView(
-          children: <Widget>[
-            new UserAccountsDrawerHeader(
-              accountName: new Text('Menú Principal'),
-              accountEmail: new Text('Cono Superior'),
-              // decoration: new BoxDecoration(
-              //   image: new DecorationImage(
-              //     fit: BoxFit.fill,
-              //    // image: AssetImage('img/estiramiento.jpg'),
-              //   )
-              // ),
-            ),
-            new Divider(),
-            // new ListTile(
-            //   title: new Text("Add data"),
-            //   trailing: new Icon(Icons.fitness_center),
-            //   onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-            //     builder: (BuildContext context) => AddData(),
-            //   )),
-            // ),
-            // new Divider(),
-            // new ListTile(
-            //   title: new Text("Mostrar listado"),
-            //   trailing: new Icon(Icons.help),
-            //   onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-            //     builder: (BuildContext context) => ShowData(),
-            //   )),
-            // ),
-          ],
-        ),
-      ),
+    );
+  }
+
+  Container headerSection() {
+    return Container(
+      margin: EdgeInsets.only(top: 50.0),
+      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+      child: Text("Cono Superior",
+          style: TextStyle(
+              color: Colors.white70,
+              fontSize: 40.0,
+              fontWeight: FontWeight.bold)),
     );
   }
 }
