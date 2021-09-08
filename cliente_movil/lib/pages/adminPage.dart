@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/Order.dart';
-import 'package:cliente_movil/models/userModel.dart';
 import 'package:cliente_movil/pages/clients.dart';
 import 'package:cliente_movil/pages/employees.dart';
 import 'package:flutter/material.dart';
@@ -34,12 +33,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  late Future<List<OrderM>> _listOrders;
+  late Future<List<Order>> _listOrders;
 
   bool loading = false;
   late SharedPreferences sharedPreferences;
 
-  Future<List<OrderM>> _getOrders() async {
+  Future<List<Order>> _getOrders() async {
     setState(() {
       loading = true;
     });
@@ -59,7 +58,7 @@ class _MainPageState extends State<MainPage> {
       },
     );
 
-    List<OrderM> orders = [];
+    List<Order> orders = [];
 
     if (response.statusCode == 200) {
       String body = utf8.decode(response.bodyBytes);
@@ -68,10 +67,10 @@ class _MainPageState extends State<MainPage> {
       print(jsonData);
 
       for (var item in jsonData["data"]) {
-        orders.add(OrderM(
+        orders.add(Order(
             item["comment"],
             item["state"],
-            UserM(item["user"]["name"], item["user"]["business_name"]),
+            UserO(item["user"]["name"], item["user"]["business_name"]),
             item["delivery_date"]));
       }
       //print(response.body);
@@ -192,7 +191,9 @@ class _MainPageState extends State<MainPage> {
     for (var order in data) {
       orders.add(Card(
           child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
             title: Text(order.state),
@@ -201,8 +202,8 @@ class _MainPageState extends State<MainPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(order.userM.name),
-                Text(order.userM.business_name),
+                Text(order.userO.name),
+                Text(order.userO.business_name),
               ],
             ),
           ),

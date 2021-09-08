@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/Order.dart';
-import 'package:cliente_movil/models/userModel.dart';
 import 'package:cliente_movil/pages/clients.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -40,9 +38,9 @@ class _MainPageState extends State<MainPage> {
   var response;
   bool loading = true;
 
-  List<OrderM> orderList = [];
+  //List<OrderM> orderList = [];
 
-  Future<List<OrderM>> getOrders() async {
+  Future<List<Order>> getOrders() async {
     log("Obteniendo prefs...");
     final prefs = await SharedPreferences.getInstance();
     String? posibleToken = prefs.getString("token");
@@ -59,15 +57,9 @@ class _MainPageState extends State<MainPage> {
       },
     );
 
-    final da = jsonDecode(response.body);
-
     /*setState(() {
       orderList = da.map((data) => OrderM.fromjson(data)).toList();
     });*/
-    for (var item in da["data"]) {
-      dat.add(OrderM(item["comment"], item["state"], item.userM["user"],
-          item["delivery_date"]));
-    }
 
     /*if (response.statusCode == 200) {
       String body = utf8.decode(response.bodyBytes);
@@ -111,30 +103,6 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      body: loading == true
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                  itemCount: orderList.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: ListTile(
-                        title: Text(orderList[index].state),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(orderList[index].delivery_date),
-                            Text(orderList[index].comment),
-                            //Text(orderList[index].userM.name)
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-            ),
       drawer: Drawer(
         child: new ListView(
           children: <Widget>[
