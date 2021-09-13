@@ -2,45 +2,53 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
-import 'package:cliente_movil/models/Order.dart';
+//import 'package:cliente_movil/models/Order.dart';
+import 'package:cliente_movil/models/OrderC.dart';
 import 'package:cliente_movil/pages/clients.dart';
 import 'package:cliente_movil/pages/employees.dart';
-import 'package:cliente_movil/pages/orderD.dart';
-import 'package:cliente_movil/pages/orderEdit.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Admin extends StatefulWidget {
+import 'adminPage.dart';
+
+class OrderD extends StatefulWidget {
+  final int id;
+  OrderD(this.id);
   @override
-  _AdminState createState() => _AdminState();
+  _OrderDState createState() => _OrderDState();
 }
 
-class _AdminState extends State<Admin> {
+class _OrderDState extends State<OrderD> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
-      home: MainPage(),
+      home: MainPage(widget.id),
       theme: ThemeData(accentColor: Colors.white70),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
+  final int id;
+  MainPage(this.id);
   @override
   _MainPageState createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  late Future<List<Order>> _listOrders;
+  late Future<List<OrderC>> _listOrderC; //Lista de productos en la Orden
 
+  //late Future<List<Order>> _listOrders; //informacion de la orden.
+
+  // ignore: non_constant_identifier_names
+  late int id_order = widget.id;
   bool loading = false;
   late SharedPreferences sharedPreferences;
 
-  Future<List<Order>> _getOrders() async {
+  Future<List<OrderC>> _getOrderC() async {
     setState(() {
       loading = true;
     });
@@ -53,14 +61,14 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders"),
+      Uri.parse("http://192.168.100.7:8000/api/orders/$id_order/products"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
       },
     );
 
-    List<Order> orders = [];
+    List<OrderC> ordersC = [];
 
     if (response.statusCode == 200) {
       String body = utf8.decode(response.bodyBytes);
@@ -68,17 +76,12 @@ class _MainPageState extends State<MainPage> {
       final jsonData = jsonDecode(body);
       print(jsonData);
 
-      for (var item in jsonData["data"]) {
-        orders.add(Order(
-            item["id"],
-            item["comment"],
-            item["state"],
-            UserO(item["user"]["name"], item["user"]["business_name"],
-                item["user"]["phone"], item["user"]["address"]),
-            item["delivery_date"]));
+      for (var item in jsonData) {
+        ordersC.add(OrderC(item["name"], item["texture"],
+            PivotC(item["pivot"]["order_id"], item["pivot"]["product_units"])));
       }
       //print(response.body);
-      return orders;
+      return ordersC;
     } else {
       throw Exception("Falló conexión");
     }
@@ -87,8 +90,9 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _listOrders = _getOrders();
+    _listOrderC = _getOrderC();
     this.loading = false;
+    //_listOrders = _getOrders();
     //checkLoginStatus();
   }
 
@@ -105,7 +109,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        title: Text("Detalle", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -123,11 +127,11 @@ class _MainPageState extends State<MainPage> {
               child: CircularProgressIndicator(),
             )
           : FutureBuilder(
-              future: _listOrders,
+              future: _listOrderC,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return ListView(
-                    children: _listadoOrders(snapshot.data),
+                    children: _listadoOrdersC(snapshot.data),
                   );
                 } else if (snapshot.hasError) {
                   print(snapshot.error);
@@ -189,85 +193,25 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  List<Widget> _listadoOrders(data) {
-    List<Widget> orders = [];
-    //int id;
-    for (var order in data) {
-      orders.add(Card(
+  List<Widget> _listadoOrdersC(data) {
+    List<Widget> ordersC = [];
+
+    for (var orderC in data) {
+      ordersC.add(Card(
           child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            title: Text(order.state),
-            subtitle: Text(order.delivery_date),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text("Cliente",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 17.0,
-                        fontWeight: FontWeight.bold)),
-                Text(order.userO.name),
-                Text(order.userO.business_name),
-                //Text(order.userO.address)
-                //Text(order.id.toString()),
-              ],
-            ),
+            //leading: Icon(Icons.person),
+            title: Text(orderC.name),
+            subtitle: Text("Textura: " + orderC.texture),
+            trailing:
+                Text("Cantidad: " + orderC.pivotC.product_units.toString()),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("Dirección: " + order.userO.address),
-              const SizedBox(
-                width: 8,
-              )
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Comentario: \n" + order.comment,
-              style: TextStyle(color: Colors.black.withOpacity(0.4)),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                  onPressed: () {
-                    //print(order.id);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderD(order.id)));
-                  },
-                  child: Text("Ver")),
-              const SizedBox(width: 8),
-              TextButton(
-                  onPressed: () {
-                    //print(order.id);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderE(
-                                order.id,
-                                order.comment,
-                                order.state,
-                                order.delivery_date)));
-                  },
-                  child: Text(
-                    "Editar",
-                    style: TextStyle(color: Colors.cyan),
-                  )),
-            ],
-          )
         ],
       )));
     }
-    return orders;
+
+    return ordersC;
   }
 }

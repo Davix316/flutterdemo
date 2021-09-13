@@ -28,6 +28,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late int id;
   bool _isLoading = false;
 
   @override
@@ -67,6 +68,7 @@ class _MyAppState extends State<MyApp> {
       jsonResponse = json.decode(response.body);
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
+      id = datauser['user']['id'];
       if (jsonResponse != null) {
         setState(() {
           _isLoading = false;
@@ -79,7 +81,7 @@ class _MyAppState extends State<MyApp> {
         } else if (datauser['user']['type'] == 'client') {
           sharedPreferences.setString("token", jsonResponse['token']);
           Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (BuildContext context) => Client()),
+              MaterialPageRoute(builder: (BuildContext context) => Client(id)),
               (Route<dynamic> route) => false);
         }
       }

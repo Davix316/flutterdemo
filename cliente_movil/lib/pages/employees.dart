@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
-import 'package:cliente_movil/models/Order.dart';
+import 'package:cliente_movil/models/EmployeeD.dart';
 import 'package:cliente_movil/pages/clients.dart';
+import 'package:cliente_movil/pages/productionE.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,15 +34,15 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  //List<ModelOrder> _list = [];
-  List<dynamic> dat = [];
-  late String url;
-  var response;
+  late Future<List<EmployeeD>> _listEmployees;
+
   bool loading = true;
+  late SharedPreferences sharedPreferences;
 
-  //List<OrderM> orderList = [];
-
-  Future<List<Order>> getOrders() async {
+  Future<List<EmployeeD>> _getEmployees() async {
+    setState(() {
+      loading = true;
+    });
     log("Obteniendo prefs...");
     final prefs = await SharedPreferences.getInstance();
     String? posibleToken = prefs.getString("token");
@@ -49,31 +51,38 @@ class _MainPageState extends State<MainPage> {
       log("No hay token");
     }
     log("Haciendo petición...");
-    response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders"),
+    final response = await http.get(
+      Uri.parse("http://192.168.100.7:8000/api/employees"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
       },
     );
 
-    /*setState(() {
-      orderList = da.map((data) => OrderM.fromjson(data)).toList();
-    });*/
+    List<EmployeeD> employees = [];
 
-    /*if (response.statusCode == 200) {
+    if (response.statusCode == 200) {
       String body = utf8.decode(response.bodyBytes);
-      final data = jsonDecode(body);
-      orderList = data.map((data) => new OrderM.fromjson(data)).toList();
-      loading = false;
-    }*/
-    return getOrders();
+
+      final jsonData = jsonDecode(body);
+      print(jsonData);
+
+      for (var item in jsonData["data"]) {
+        employees.add(EmployeeD(item["id"], item["name"], item["email"],
+            item["phone"], item["dni"]));
+      }
+      //print(response.body);
+      return employees;
+    } else {
+      throw Exception("Falló conexión");
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    getOrders();
+    _listEmployees = _getEmployees();
+    this.loading = false;
     //checkLoginStatus();
   }
 
@@ -103,6 +112,26 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
+      body: (loading)
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : FutureBuilder(
+              future: _listEmployees,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListView(
+                    children: _listadoEmployees(snapshot.data),
+                  );
+                } else if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return Text("Error");
+                }
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+            ),
       drawer: Drawer(
         child: new ListView(
           children: <Widget>[
@@ -131,6 +160,14 @@ class _MainPageState extends State<MainPage> {
               onTap: () => Navigator.of(context).push(new MaterialPageRoute(
                 builder: (BuildContext context) => Clients(),
               )),
+            ),
+            new Divider(),
+            new ListTile(
+              title: new Text("Empleados"),
+              trailing: new Icon(Icons.hail),
+              onTap: () => Navigator.of(context).push(new MaterialPageRoute(
+                builder: (BuildContext context) => Employees(),
+              )),
             )
             // new Divider(),
             // new ListTile(
@@ -146,37 +183,46 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  /*List<Widget> _listadoUsers(data) {
-    List<Widget> users = [];
+  List<Widget> _listadoEmployees(data) {
+    List<Widget> employees = [];
 
-    for (var user in data) {
-      if (user.type == "client") {
-        users.add(Card(
-            child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text(user.name),
-              subtitle: Text(user.business_name),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [Text(user.phone)],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [Text(user.address)],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [Text(user.email)],
-            ),
-          ],
-        )));
-      }
+    for (var employee in data) {
+      employees.add(Card(
+          child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: Icon(Icons.work),
+            title: Text(employee.name),
+            subtitle: Text(employee.dni),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [Text(employee.phone)],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [Text(employee.email)],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                  onPressed: () {
+                    //print(order.id);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ProductionE(employee.id)));
+                  },
+                  child: Text("Producción")),
+              const SizedBox(width: 8),
+            ],
+          )
+        ],
+      )));
     }
 
-    return users;
-  }*/
+    return employees;
+  }
 }
