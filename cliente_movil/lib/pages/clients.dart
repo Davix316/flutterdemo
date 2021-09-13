@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/User.dart';
+import 'package:cliente_movil/pages/employees.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,8 +67,8 @@ class _MainPageState extends State<MainPage> {
       print(jsonData);
 
       for (var item in jsonData["data"]) {
-        users.add(User(item["Nombre"], item["Nombre del Negocio"],
-            item["Teléfono"], item["Dirección"], item["Tipo"], item["Correo"]));
+        users.add(User(item["name"], item["business_name"], item["phone"],
+            item["address"], item["type"], item["email"]));
       }
       //print(response.body);
       return users;
@@ -157,6 +158,14 @@ class _MainPageState extends State<MainPage> {
               trailing: new Icon(Icons.group),
               onTap: () => Navigator.of(context).push(new MaterialPageRoute(
                 builder: (BuildContext context) => Clients(),
+              )),
+            ),
+            new Divider(),
+            new ListTile(
+              title: new Text("Empleados"),
+              trailing: new Icon(Icons.hail),
+              onTap: () => Navigator.of(context).push(new MaterialPageRoute(
+                builder: (BuildContext context) => Employees(),
               )),
             )
             // new Divider(),

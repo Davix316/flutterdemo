@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Client extends StatefulWidget {
+  final int id;
+  Client(this.id);
   @override
   _ClientState createState() => _ClientState();
 }
@@ -17,13 +19,15 @@ class _ClientState extends State<Client> {
     return MaterialApp(
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
-      home: MainPage(),
+      home: MainPage(widget.id),
       theme: ThemeData(accentColor: Colors.white70),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
+  final int id;
+  MainPage(this.id);
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -63,7 +67,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      body: Center(child: Text("Main Page")),
+      body: Center(child: Text("Usuario: " + widget.id.toString())),
       drawer: Drawer(
         child: new ListView(
           children: <Widget>[

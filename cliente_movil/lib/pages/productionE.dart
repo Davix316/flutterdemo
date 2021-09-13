@@ -2,45 +2,51 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
-import 'package:cliente_movil/models/Order.dart';
+import 'package:cliente_movil/models/EmployeeP.dart';
 import 'package:cliente_movil/pages/clients.dart';
 import 'package:cliente_movil/pages/employees.dart';
-import 'package:cliente_movil/pages/orderD.dart';
-import 'package:cliente_movil/pages/orderEdit.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Admin extends StatefulWidget {
+import 'adminPage.dart';
+
+class ProductionE extends StatefulWidget {
+  final int id;
+  ProductionE(this.id);
   @override
-  _AdminState createState() => _AdminState();
+  _ProductionEState createState() => _ProductionEState();
 }
 
-class _AdminState extends State<Admin> {
+class _ProductionEState extends State<ProductionE> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
-      home: MainPage(),
+      home: MainPage(widget.id),
       theme: ThemeData(accentColor: Colors.white70),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
+  final int id;
+  MainPage(this.id);
   @override
   _MainPageState createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  late Future<List<Order>> _listOrders;
+  late Future<List<ProductionEm>>
+      _listProductionE; //Lista de productos en la Orden
 
+  // ignore: non_constant_identifier_names
+  late int id_employee = widget.id;
   bool loading = false;
   late SharedPreferences sharedPreferences;
 
-  Future<List<Order>> _getOrders() async {
+  Future<List<ProductionEm>> _getProductionE() async {
     setState(() {
       loading = true;
     });
@@ -53,14 +59,15 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders"),
+      Uri.parse(
+          "http://192.168.100.7:8000/api/employee/$id_employee/production"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
       },
     );
 
-    List<Order> orders = [];
+    List<ProductionEm> productionE = [];
 
     if (response.statusCode == 200) {
       String body = utf8.decode(response.bodyBytes);
@@ -69,16 +76,16 @@ class _MainPageState extends State<MainPage> {
       print(jsonData);
 
       for (var item in jsonData["data"]) {
-        orders.add(Order(
-            item["id"],
-            item["comment"],
-            item["state"],
-            UserO(item["user"]["name"], item["user"]["business_name"],
-                item["user"]["phone"], item["user"]["address"]),
-            item["delivery_date"]));
+        productionE.add(ProductionEm(
+            item["total_sales"],
+            item["liters"],
+            item["time"],
+            item["performance"],
+            item["date"],
+            ProductP(item["product"]["name"], item["product"]["dimensions"])));
       }
       //print(response.body);
-      return orders;
+      return productionE;
     } else {
       throw Exception("Falló conexión");
     }
@@ -87,8 +94,9 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _listOrders = _getOrders();
+    _listProductionE = _getProductionE();
     this.loading = false;
+    //_listOrders = _getOrders();
     //checkLoginStatus();
   }
 
@@ -105,7 +113,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        title: Text("Detalle", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -123,11 +131,11 @@ class _MainPageState extends State<MainPage> {
               child: CircularProgressIndicator(),
             )
           : FutureBuilder(
-              future: _listOrders,
+              future: _listProductionE,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return ListView(
-                    children: _listadoOrders(snapshot.data),
+                    children: _listadoProductionE(snapshot.data),
                   );
                 } else if (snapshot.hasError) {
                   print(snapshot.error);
@@ -189,85 +197,43 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  List<Widget> _listadoOrders(data) {
-    List<Widget> orders = [];
-    //int id;
-    for (var order in data) {
-      orders.add(Card(
+  List<Widget> _listadoProductionE(data) {
+    List<Widget> productionsE = [];
+
+    for (var productionC in data) {
+      productionsE.add(Card(
           child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text(order.state),
-            subtitle: Text(order.delivery_date),
+            //leading: Icon(Icons.person),
+            title: Text(productionC.productP.name),
+            subtitle: Text("Dimensiones: " + productionC.productP.dimensions),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text("Cliente",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 17.0,
-                        fontWeight: FontWeight.bold)),
-                Text(order.userO.name),
-                Text(order.userO.business_name),
-                //Text(order.userO.address)
-                //Text(order.id.toString()),
+                Text("Paquetes: " + productionC.total_sales.toString(),
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("Litros: " + productionC.liters.toString(),
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "Horas: " + productionC.time,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
               ],
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("Dirección: " + order.userO.address),
-              const SizedBox(
-                width: 8,
-              )
-            ],
-          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Comentario: \n" + order.comment,
-              style: TextStyle(color: Colors.black.withOpacity(0.4)),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                  onPressed: () {
-                    //print(order.id);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderD(order.id)));
-                  },
-                  child: Text("Ver")),
-              const SizedBox(width: 8),
-              TextButton(
-                  onPressed: () {
-                    //print(order.id);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderE(
-                                order.id,
-                                order.comment,
-                                order.state,
-                                order.delivery_date)));
-                  },
-                  child: Text(
-                    "Editar",
-                    style: TextStyle(color: Colors.cyan),
-                  )),
-            ],
+            child: Text("Fecha: " + productionC.date,
+                style: TextStyle(color: Colors.black.withOpacity(0.4))),
           )
         ],
       )));
     }
-    return orders;
+
+    return productionsE;
   }
 }
