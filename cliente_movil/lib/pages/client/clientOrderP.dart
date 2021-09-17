@@ -1,40 +1,46 @@
+//import 'dart:convert';
+//Pagina de ordendes en proceso del cliente
 import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/Order.dart';
-import 'package:cliente_movil/pages/clients.dart';
-import 'package:cliente_movil/pages/employees.dart';
-import 'package:cliente_movil/pages/orderD.dart';
-import 'package:cliente_movil/pages/orderEdit.dart';
+import 'package:cliente_movil/pages/client/clientOrderC.dart';
+import 'package:cliente_movil/pages/client/clientPage.dart';
+import 'package:cliente_movil/pages/client/productsPage.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
-class Admin extends StatefulWidget {
+class ClientOrderP extends StatefulWidget {
+  final int id;
+  ClientOrderP(this.id);
   @override
-  _AdminState createState() => _AdminState();
+  _ClientOrderPState createState() => _ClientOrderPState();
 }
 
-class _AdminState extends State<Admin> {
+class _ClientOrderPState extends State<ClientOrderP> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
-      home: MainPage(),
+      home: MainPage(widget.id),
       theme: ThemeData(accentColor: Colors.white70),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
+  final int id;
+  MainPage(this.id);
   @override
   _MainPageState createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
+  // ignore: non_constant_identifier_names
+  late int id_user = widget.id;
   late Future<List<Order>> _listOrders;
 
   bool loading = false;
@@ -53,7 +59,8 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders"),
+      Uri.parse(
+          "http://192.168.100.7:8000/api/orders/filtered/3/user/${widget.id}"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -145,7 +152,7 @@ class _MainPageState extends State<MainPage> {
           children: <Widget>[
             new UserAccountsDrawerHeader(
               accountName: new Text('Menú Principal'),
-              accountEmail: new Text('Administrador'),
+              accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
               //   image: new DecorationImage(
               //     fit: BoxFit.fill,
@@ -153,38 +160,27 @@ class _MainPageState extends State<MainPage> {
               //   )
               // ),
             ),
-            new Divider(),
             new ListTile(
-              title: new Text("Pedidos"),
-              trailing: new Icon(Icons.shopping_cart),
+              title: new Text("Pedidos en espera"),
+              trailing: new Icon(Icons.access_time),
               onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-                builder: (BuildContext context) => Admin(),
+                builder: (BuildContext context) => Client(widget.id),
               )),
             ),
-            new Divider(),
             new ListTile(
-              title: new Text("Clientes"),
-              trailing: new Icon(Icons.group),
+              title: new Text("Pedidos en proceso"),
+              trailing: new Icon(Icons.handyman),
               onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-                builder: (BuildContext context) => Clients(),
+                builder: (BuildContext context) => ClientOrderP(widget.id),
               )),
             ),
-            new Divider(),
             new ListTile(
-              title: new Text("Empleados"),
-              trailing: new Icon(Icons.hail),
+              title: new Text("Productos"),
+              trailing: new Icon(Icons.assignment_outlined),
               onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-                builder: (BuildContext context) => Employees(),
+                builder: (BuildContext context) => Product(id_user),
               )),
-            )
-            // new Divider(),
-            // new ListTile(
-            //   title: new Text("Mostrar listado"),
-            //   trailing: new Icon(Icons.help),
-            //   onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-            //     builder: (BuildContext context) => ShowData(),
-            //   )),
-            // ),
+            ),
           ],
         ),
       ),
@@ -198,48 +194,34 @@ class _MainPageState extends State<MainPage> {
       orders.add(Card(
           child: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text(order.state),
-            subtitle: Text(order.delivery_date),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text("Cliente",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 17.0,
-                        fontWeight: FontWeight.bold)),
-                Text(order.userO.name),
-                Text(order.userO.business_name),
-                //Text(order.userO.address)
-                //Text(order.id.toString()),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("Dirección: " + order.userO.address),
-              const SizedBox(
-                width: 8,
-              )
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+            title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Comentario: \n" + order.comment,
-                  style: TextStyle(color: Colors.black.withOpacity(0.4)),
+                  "Estado del pedido:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Text("\nFecha de solicitud: " + order.created_at),
+                Text(order.state)
               ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("\nFecha de solicitud:"),
+                Text(order.created_at),
+                Text("\nFecha asignada de entrega:"),
+                Text(order.delivery_date)
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Comentario: \n" + order.comment,
+              style: TextStyle(color: Colors.black.withOpacity(0.4)),
             ),
           ),
           Row(
@@ -251,26 +233,11 @@ class _MainPageState extends State<MainPage> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => OrderD(order.id)));
+                            builder: (context) =>
+                                ClientOrderC(id_user, order.id)));
                   },
-                  child: Text("Ver")),
+                  child: Text("Productos")),
               const SizedBox(width: 8),
-              TextButton(
-                  onPressed: () {
-                    //print(order.id);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderE(
-                                order.id,
-                                order.comment,
-                                order.state,
-                                order.delivery_date)));
-                  },
-                  child: Text(
-                    "Editar",
-                    style: TextStyle(color: Colors.cyan),
-                  )),
             ],
           )
         ],
