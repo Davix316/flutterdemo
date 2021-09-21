@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:cliente_movil/pages/adminPage.dart';
-import 'package:cliente_movil/pages/clientPage.dart';
+import 'package:cliente_movil/pages/client/clientPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;

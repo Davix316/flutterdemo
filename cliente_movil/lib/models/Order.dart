@@ -4,9 +4,14 @@ class Order {
   final String state;
   final UserO userO;
   // ignore: non_constant_identifier_names
+  final String created_at;
+  // ignore: non_constant_identifier_names
+  final String updated_at;
+  // ignore: non_constant_identifier_names
   final String delivery_date;
 
-  Order(this.id, this.comment, this.state, this.userO, this.delivery_date);
+  Order(this.id, this.comment, this.state, this.userO, this.created_at,
+      this.updated_at, this.delivery_date);
 }
 
 class UserO {
