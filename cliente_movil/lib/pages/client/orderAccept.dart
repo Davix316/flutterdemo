@@ -128,7 +128,7 @@ class _MainPageState extends State<MainPage> {
     controllerComment = new TextEditingController(text: "Sin asignar");
     dateinput = new TextEditingController(
         text:
-            "La fecha sera asignada por el administrador"); //set the initial value of text field
+            "La fecha será asignada por el administrador"); //set the initial value of text field
 
     super.initState();
     this.loading = false;
@@ -233,7 +233,7 @@ class _MainPageState extends State<MainPage> {
                               builder: (_) => AlertDialog(
                                     title: Text("Cancelar orden"),
                                     content: Text(
-                                        "¿Estas seguro? Se eliminara la orden y todos los productos seleccionados."),
+                                        "¿Estás seguro? Se eliminará la orden y todos los productos seleccionados."),
                                     actions: [
                                       ElevatedButton(
                                           onPressed: () {

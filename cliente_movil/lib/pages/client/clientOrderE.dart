@@ -234,7 +234,7 @@ class _MainPageState extends State<MainPage> {
                               builder: (_) => AlertDialog(
                                     title: Text("Eliminar orden"),
                                     content: Text(
-                                        "¿Estas seguro? Se eliminara la orden y todos los productos seleccionados."),
+                                        "¿Estás seguro? Se eliminará la orden y todos los productos seleccionados."),
                                     actions: [
                                       ElevatedButton(
                                           onPressed: () {
