@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constant.dart';
 import 'adminPage.dart';
 
 class OrderD extends StatefulWidget {
@@ -26,7 +27,8 @@ class _OrderDState extends State<OrderD> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -61,7 +63,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders/$id_order/products"),
+      Uri.parse("$ROUTE_API/orders/$id_order/products"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',

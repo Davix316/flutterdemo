@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../constant.dart';
 import 'adminPage.dart';
 import 'clients.dart';
 
@@ -33,7 +34,8 @@ class _OrderEState extends State<OrderE> {
       debugShowCheckedModeBanner: false,
       home: MainPage(
           widget.id, widget.comment, widget.state, widget.delivery_date),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -77,7 +79,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http
-        .put(Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+        .put(Uri.parse("$ROUTE_API/orders/$idOrder"),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $posibleToken',

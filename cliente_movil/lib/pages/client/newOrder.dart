@@ -13,6 +13,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constant.dart';
+
 class NewOrder extends StatefulWidget {
   // ignore: non_constant_identifier_names
   final int id_user;
@@ -30,7 +32,8 @@ class _NewOrderState extends State<NewOrder> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id_user, widget.id_order),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -66,7 +69,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");*/
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/products"),
+      Uri.parse("$ROUTE_API/products"),
       /*headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -111,7 +114,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http
-        .post(Uri.parse("http://192.168.100.7:8000/api/carts"),
+        .post(Uri.parse("$ROUTE_API/carts"),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $posibleToken',
@@ -158,6 +161,8 @@ class _MainPageState extends State<MainPage> {
                       CartProduct(widget.id_user, widget.id_order),
                 ));
               },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
               icon: new Icon(Icons.shopping_cart_outlined),
               label: Text("Carrito")),
           TextButton(
