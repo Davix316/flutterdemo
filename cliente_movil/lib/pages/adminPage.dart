@@ -80,7 +80,7 @@ class _MainPageState extends State<MainPage> {
                 item["user"]["phone"], item["user"]["address"]),
             item["created_at"],
             item["updated_at"],
-            item["delivery_date"]));
+            item["delivery_date"] ?? "Sin asignar fecha"));
       }
       //print(response.body);
       return orders;

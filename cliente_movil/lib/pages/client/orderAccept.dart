@@ -215,11 +215,8 @@ class _MainPageState extends State<MainPage> {
                                   loading = true;
                                 });
 
-                                _updateOrders(
-                                    widget.order_id,
-                                    controllerComment.text,
-                                    "en espera",
-                                    "1000-01-01");
+                                _updateOrders(widget.order_id,
+                                    controllerComment.text, "en espera", "");
                                 Navigator.of(context)
                                     .push(new MaterialPageRoute(
                                   builder: (BuildContext context) =>

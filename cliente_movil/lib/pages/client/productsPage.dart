@@ -147,7 +147,7 @@ class _MainPageState extends State<MainPage> {
         actions: <Widget>[
           ElevatedButton.icon(
               onPressed: () {
-                _postOrders("Sin asignar", "en carrito", "1000-01-01");
+                _postOrders("", "en carrito", "");
               },
               style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(Colors.amber)),

@@ -37,6 +37,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late int id;
   bool _isLoading = false;
+  late bool _passwordVisible; //Visibilidad de contraseña
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +63,12 @@ class _MyAppState extends State<MyApp> {
               ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    _passwordVisible = false;
+    super.initState();
   }
 
   signIn(String email, pass) async {
@@ -144,15 +151,30 @@ class _MyAppState extends State<MyApp> {
           TextFormField(
             controller: passwordController,
             cursorColor: Colors.white,
-            obscureText: true,
+            obscureText: !_passwordVisible,
             style: TextStyle(color: Colors.black),
             decoration: InputDecoration(
-              icon: Icon(Icons.lock, color: Colors.black),
-              hintText: "Contraseña",
-              border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white70)),
-              hintStyle: TextStyle(color: Colors.black),
-            ),
+                icon: Icon(Icons.lock, color: Colors.black),
+                hintText: "Contraseña",
+                border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white70)),
+                hintStyle: TextStyle(color: Colors.black),
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                suffixIcon: GestureDetector(
+                  onLongPress: () {
+                    setState(() {
+                      _passwordVisible = true;
+                    });
+                  },
+                  onLongPressUp: () {
+                    setState(() {
+                      _passwordVisible = false;
+                    });
+                  },
+                  child: Icon(_passwordVisible
+                      ? Icons.visibility
+                      : Icons.visibility_off),
+                )),
           ),
         ],
       ),

@@ -146,7 +146,6 @@ class _MainPageState extends State<MainPage> {
                     maxLines: 5,
                     enabled: false,
                     decoration: new InputDecoration(
-                      hintText: "Comentario",
                       labelText: "Comentario",
                     ),
                   ),

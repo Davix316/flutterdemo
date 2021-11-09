@@ -80,13 +80,13 @@ class _MainPageState extends State<MainPage> {
       for (var item in jsonData["data"]) {
         orders.add(Order(
             item["id"],
-            item["comment"],
+            item["comment"] ?? "Sin asignar",
             item["state"],
             UserO(item["user"]["name"], item["user"]["business_name"],
                 item["user"]["phone"], item["user"]["address"]),
             item["created_at"],
             item["updated_at"],
-            item["delivery_date"]));
+            item["delivery_date"] ?? "Sin asignar"));
       }
       //print(response.body);
       return orders;
