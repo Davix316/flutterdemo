@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/Product.dart';
 import 'package:cliente_movil/pages/client/cartProduct.dart';
 import 'package:cliente_movil/pages/client/clientOrderP.dart';
@@ -103,6 +102,7 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  //Función agregar productos a carrito
   // ignore: non_constant_identifier_names
   void _postCart(int product_units, int order_id, int product_id) async {
     log("Obteniendo prefs...");
@@ -130,6 +130,33 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  //Funcion eliminar orden
+  void _deleteOrders(
+    int idOrder,
+  ) async {
+    setState(() {
+      loading = true;
+    });
+    log("Obteniendo prefs...");
+    final prefs = await SharedPreferences.getInstance();
+    String? posibleToken = prefs.getString("token");
+    log("Posible token: $posibleToken");
+    if (posibleToken == null) {
+      log("No hay token");
+    }
+    log("Haciendo petición...");
+    await http.delete(
+      Uri.parse("$ROUTE_API/orders/$idOrder"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $posibleToken',
+      },
+    ).then((response) {
+      print('Status: ${response.statusCode}');
+      //print('Body: ${response.body}');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -152,7 +179,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Productos", style: TextStyle(color: Colors.white)),
+        title: Text("Lista", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           ElevatedButton.icon(
               onPressed: () {
@@ -165,15 +192,42 @@ class _MainPageState extends State<MainPage> {
                   backgroundColor: MaterialStateProperty.all(Colors.amber)),
               icon: new Icon(Icons.shopping_cart_outlined),
               label: Text("Carrito")),
-          TextButton(
-            onPressed: () {
-              // ignore: deprecated_member_use
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (BuildContext context) => App()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
-          ),
+          ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                          title: Text("Cancelar orden"),
+                          content: Text(
+                              "¿Estás seguro? Se eliminará la orden y todos los productos seleccionados."),
+                          actions: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop();
+                                },
+                                child: Text("No",
+                                    style:
+                                        TextStyle(color: Colors.indigo[900]))),
+                            ElevatedButton(
+                                onPressed: () {
+                                  _deleteOrders(widget.id_order);
+                                  Navigator.of(context, rootNavigator: true)
+                                      .push(new MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              Product(
+                                                widget.id_user,
+                                              )));
+                                },
+                                child: Text("Sí",
+                                    style: TextStyle(color: Colors.red))),
+                          ],
+                        ));
+              },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
+              icon: new Icon(Icons.cancel),
+              label: Text("Cancelar")),
         ],
       ),
       body: Container(
@@ -298,7 +352,6 @@ class _MainPageState extends State<MainPage> {
                   onPressed: () {
                     _postCart(int.parse(controllerUnits.text), widget.id_order,
                         product.id);
-
                     showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
@@ -314,6 +367,7 @@ class _MainPageState extends State<MainPage> {
                                             color: Colors.indigo[900])))
                               ],
                             ));
+                    controllerUnits.text = "";
                   },
                   child: Text("Agregar a carrito")),
               const SizedBox(width: 8),

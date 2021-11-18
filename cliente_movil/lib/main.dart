@@ -104,6 +104,23 @@ class _MyAppState extends State<MyApp> {
         _isLoading = false;
       });
       print(response.body);
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                content: Text("Email o contraseña incorrectos.",
+                    style: TextStyle(color: Colors.white)),
+                backgroundColor: Colors.amber[400],
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                      child: Text("Intentar nuevamente",
+                          style: TextStyle(color: Colors.blueGrey)))
+                ],
+              ));
+      emailController.text = "";
+      passwordController.text = "";
     }
   }
 

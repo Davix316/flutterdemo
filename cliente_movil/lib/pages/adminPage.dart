@@ -40,6 +40,10 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   late Future<List<Order>> _listOrders;
 
+  //Filtrado
+  late String _valueChoose;
+  var listItem = ["En espera", "En proceso", "Entregado"];
+
   bool loading = false;
   late SharedPreferences sharedPreferences;
 
@@ -74,7 +78,7 @@ class _MainPageState extends State<MainPage> {
       for (var item in jsonData["data"]) {
         orders.add(Order(
             item["id"],
-            item["comment"],
+            item["comment"] ?? "Sin asignar",
             item["state"],
             UserO(item["user"]["name"], item["user"]["business_name"],
                 item["user"]["phone"], item["user"]["address"]),
@@ -91,6 +95,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
+    _valueChoose = "En espera";
     super.initState();
     _listOrders = _getOrders();
     this.loading = false;
@@ -110,7 +115,18 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        title: DropdownButton(
+          icon: const Icon(Icons.arrow_circle_down_outlined),
+          items: listItem.map((String a) {
+            return DropdownMenuItem(value: a, child: Text(a));
+          }).toList(),
+          onChanged: (_value) {
+            setState(() {
+              _valueChoose = _value.toString();
+            });
+          },
+          hint: Text(_valueChoose),
+        ),
         actions: <Widget>[
           TextButton(
             onPressed: () {

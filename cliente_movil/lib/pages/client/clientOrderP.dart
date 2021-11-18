@@ -45,6 +45,8 @@ class _MainPageState extends State<MainPage> {
   // ignore: non_constant_identifier_names
   late int id_user = widget.id;
   late Future<List<Order>> _listOrders;
+  //variable return de pagina
+  bool num = false;
 
   bool loading = false;
   late SharedPreferences sharedPreferences;
@@ -232,11 +234,12 @@ class _MainPageState extends State<MainPage> {
               TextButton(
                   onPressed: () {
                     //print(order.id);
+
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                ClientOrderC(id_user, order.id)));
+                                ClientOrderC(id_user, order.id, num)));
                   },
                   child: Text("Productos")),
               const SizedBox(width: 8),

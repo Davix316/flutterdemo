@@ -93,33 +93,55 @@ class _MainPageState extends State<MainPage> {
   void _postOrders(String comment, String state, String delivery_date) async {
     log("Obteniendo prefs...");
     final prefs = await SharedPreferences.getInstance();
+    final msg = jsonEncode(
+        {'comment': comment, 'state': state, 'delivery_date': delivery_date});
     String? posibleToken = prefs.getString("token");
     log("Posible token: $posibleToken");
     if (posibleToken == null) {
       log("No hay token");
     }
     log("Haciendo petición...");
-    await http
-        .post(Uri.parse("$ROUTE_API/orders"),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Authorization': 'Bearer $posibleToken',
-            },
-            body: jsonEncode({
-              "comment": "$comment",
-              "state": "$state",
-              "delivery_date": "$delivery_date",
-            }))
-        .then((response) {
-      print('Status: ${response.statusCode}');
-      print('Body: ${response.body}');
+    Map<String, String> header = {
+      'Content-Type': 'application/json-patch+json',
+      'accept': 'application/json',
+      'Authorization': 'Bearer $posibleToken'
+    };
+    var response = await http.post(Uri.parse("$ROUTE_API/orders"),
+        headers:
+            /*<String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Charset': 'utf-8',
+          'Authorization': 'Bearer $posibleToken',
+        }*/
+            header,
+        body:
+            /*jsonEncode({
+          "comment": comment,
+          "state": state,
+          "delivery_date": delivery_date,
+        })*/
+            msg);
+    if (response.statusCode == 201) {
       var datauser = json.decode(response.body);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       id_order = datauser["id"];
-      print('ID de la orden: $id_order');
-    });
-    Navigator.of(context).push(new MaterialPageRoute(
-      builder: (BuildContext context) => NewOrder(widget.id_user, id_order),
-    ));
+      Navigator.of(context).push(new MaterialPageRoute(
+        builder: (BuildContext context) => NewOrder(widget.id_user, id_order),
+      ));
+    } else {
+      print('Response status: ${response.statusCode}');
+      print(response.body);
+      print("fallo ");
+    }
+    /*.then((response) {
+      //print('Status: ${response.statusCode}');
+      //print('Body: ${response.body}');
+      var datauser = json.decode(json.encode(response.body));
+
+      id_order = datauser["id"];
+      //print('ID de la orden: $id_order');
+    });*/
   }
 
   @override

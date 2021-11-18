@@ -170,10 +170,35 @@ class _MainPageState extends State<MainPage> {
               icon: new Icon(Icons.add_shopping_cart_outlined)),
           ElevatedButton.icon(
               onPressed: () {
-                _deleteOrders(widget.id_order);
-                Navigator.of(context).push(new MaterialPageRoute(
-                  builder: (BuildContext context) => Product(widget.id_user),
-                ));
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                          title: Text("Cancelar orden"),
+                          content: Text(
+                              "¿Estás seguro? Se eliminará la orden y todos los productos seleccionados."),
+                          actions: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop();
+                                },
+                                child: Text("No",
+                                    style:
+                                        TextStyle(color: Colors.indigo[900]))),
+                            ElevatedButton(
+                                onPressed: () {
+                                  _deleteOrders(widget.id_order);
+                                  Navigator.of(context, rootNavigator: true)
+                                      .push(new MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              Product(
+                                                widget.id_user,
+                                              )));
+                                },
+                                child: Text("Sí",
+                                    style: TextStyle(color: Colors.red))),
+                          ],
+                        ));
               },
               style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(Colors.amber)),
