@@ -43,6 +43,7 @@ class _MainPageState extends State<MainPage> {
   //Filtrado
   late String _valueChoose;
   var listItem = ["En espera", "En proceso", "Entregado"];
+  late int state;
 
   bool loading = false;
   late SharedPreferences sharedPreferences;
@@ -59,8 +60,15 @@ class _MainPageState extends State<MainPage> {
       log("No hay token");
     }
     log("Haciendo petición...");
+    if (_valueChoose == "En espera") {
+      state = 2;
+    } else if (_valueChoose == "En proceso") {
+      state = 3;
+    } else {
+      state = 4;
+    }
     final response = await http.get(
-      Uri.parse("$ROUTE_API/orders"),
+      Uri.parse("$ROUTE_API/orders/filtered/$state"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -123,6 +131,16 @@ class _MainPageState extends State<MainPage> {
           onChanged: (_value) {
             setState(() {
               _valueChoose = _value.toString();
+              /*if (_valueChoose == "En espera") {
+                state = 2;
+              } else if (_valueChoose == "En proceso") {
+                state = 3;
+              } else {
+                state = 4;
+              }
+              print(state);*/
+              _listOrders = _getOrders();
+              this.loading = false;
             });
           },
           hint: Text(_valueChoose),
@@ -135,7 +153,10 @@ class _MainPageState extends State<MainPage> {
                   MaterialPageRoute(builder: (BuildContext context) => App()),
                   (Route<dynamic> route) => false);
             },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
+            child: Text("Log Out",
+                style: TextStyle(
+                  color: Colors.white,
+                )),
           ),
         ],
       ),
@@ -163,6 +184,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(

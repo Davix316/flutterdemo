@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cliente_movil/main.dart';
+//import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/EmployeeP.dart';
 import 'package:cliente_movil/pages/clients.dart';
 import 'package:cliente_movil/pages/employees.dart';
@@ -116,15 +116,14 @@ class _MainPageState extends State<MainPage> {
       appBar: AppBar(
         title: Text("Producción", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              // ignore: deprecated_member_use
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (BuildContext context) => App()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
-          ),
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(new MaterialPageRoute(
+                  builder: (BuildContext context) => Employees(),
+                ));
+              },
+              color: Colors.white,
+              icon: new Icon(Icons.keyboard_return_outlined)),
         ],
       ),
       body: (loading)
@@ -151,6 +150,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(

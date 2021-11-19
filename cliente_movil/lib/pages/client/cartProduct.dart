@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/models/OrderC.dart';
-import 'package:cliente_movil/pages/client/clientOrderP.dart';
-import 'package:cliente_movil/pages/client/clientPage.dart';
+//import 'package:cliente_movil/pages/client/clientOrderP.dart';
+//import 'package:cliente_movil/pages/client/clientPage.dart';
 import 'package:cliente_movil/pages/client/newOrder.dart';
 import 'package:cliente_movil/pages/client/orderAccept.dart';
 import 'package:cliente_movil/pages/client/productsPage.dart';
@@ -226,10 +226,13 @@ class _MainPageState extends State<MainPage> {
                 );
               },
             ),
-      drawer: Drawer(
+      /*drawer: Drawer(
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
@@ -262,7 +265,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-      ),
+      ),*/
     );
   }
 

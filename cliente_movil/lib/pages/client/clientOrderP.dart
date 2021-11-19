@@ -118,7 +118,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        title: Text("En Proceso", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -155,6 +155,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(

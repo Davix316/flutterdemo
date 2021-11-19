@@ -226,6 +226,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(

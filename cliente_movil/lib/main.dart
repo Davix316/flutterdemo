@@ -74,6 +74,7 @@ class _MyAppState extends State<MyApp> {
   signIn(String email, pass) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     Map data = {'email': email, 'password': pass};
+    // ignore: avoid_init_to_null
     var jsonResponse = null;
 
     var response = await http.post(Uri.parse("$ROUTE_API/login"), body: data);

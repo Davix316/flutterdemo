@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:cliente_movil/models/Product.dart';
 import 'package:cliente_movil/pages/client/cartProduct.dart';
-import 'package:cliente_movil/pages/client/clientOrderP.dart';
-import 'package:cliente_movil/pages/client/clientPage.dart';
+//import 'package:cliente_movil/pages/client/clientOrderP.dart';
+//import 'package:cliente_movil/pages/client/clientPage.dart';
 import 'package:cliente_movil/pages/client/productsPage.dart';
 
 import 'package:flutter/material.dart';
@@ -252,10 +252,13 @@ class _MainPageState extends State<MainPage> {
                 },
               ),
       ),
-      drawer: Drawer(
+      /*drawer: Drawer(
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
@@ -288,7 +291,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-      ),
+      ),*/
     );
   }
 

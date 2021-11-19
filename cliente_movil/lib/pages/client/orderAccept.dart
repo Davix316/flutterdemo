@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
 
-import 'package:cliente_movil/pages/client/clientOrderP.dart';
+//import 'package:cliente_movil/pages/client/clientOrderP.dart';
 import 'package:cliente_movil/pages/client/clientPage.dart';
 
-import 'package:cliente_movil/main.dart';
+//import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/pages/client/productsPage.dart';
 
 import 'package:flutter/material.dart';
@@ -152,7 +152,7 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Pedido", style: TextStyle(color: Colors.white)),
-        actions: <Widget>[
+        /*actions: <Widget>[
           TextButton(
             onPressed: () {
               // ignore: deprecated_member_use
@@ -162,7 +162,7 @@ class _MainPageState extends State<MainPage> {
             },
             child: Text("Log Out", style: TextStyle(color: Colors.white)),
           ),
-        ],
+        ],*/
       ),
       body: Form(
         child: ListView(
@@ -270,7 +270,7 @@ class _MainPageState extends State<MainPage> {
           ],
         ),
       ),
-      drawer: Drawer(
+      /*drawer: Drawer(
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
@@ -306,7 +306,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-      ),
+      ),*/
     );
   }
 }
