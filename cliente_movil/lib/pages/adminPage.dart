@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constant.dart';
+
 class Admin extends StatefulWidget {
   @override
   _AdminState createState() => _AdminState();
@@ -24,7 +26,8 @@ class _AdminState extends State<Admin> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -36,6 +39,11 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   late Future<List<Order>> _listOrders;
+
+  //Filtrado
+  late String _valueChoose;
+  var listItem = ["En espera", "En proceso", "Entregado"];
+  late int state;
 
   bool loading = false;
   late SharedPreferences sharedPreferences;
@@ -52,8 +60,15 @@ class _MainPageState extends State<MainPage> {
       log("No hay token");
     }
     log("Haciendo petición...");
+    if (_valueChoose == "En espera") {
+      state = 2;
+    } else if (_valueChoose == "En proceso") {
+      state = 3;
+    } else {
+      state = 4;
+    }
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders"),
+      Uri.parse("$ROUTE_API/orders/filtered/$state"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -71,13 +86,13 @@ class _MainPageState extends State<MainPage> {
       for (var item in jsonData["data"]) {
         orders.add(Order(
             item["id"],
-            item["comment"],
+            item["comment"] ?? "Sin asignar",
             item["state"],
             UserO(item["user"]["name"], item["user"]["business_name"],
                 item["user"]["phone"], item["user"]["address"]),
             item["created_at"],
             item["updated_at"],
-            item["delivery_date"]));
+            item["delivery_date"] ?? "Sin asignar fecha"));
       }
       //print(response.body);
       return orders;
@@ -88,6 +103,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
+    _valueChoose = "En espera";
     super.initState();
     _listOrders = _getOrders();
     this.loading = false;
@@ -107,7 +123,28 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        title: DropdownButton(
+          icon: const Icon(Icons.arrow_circle_down_outlined),
+          items: listItem.map((String a) {
+            return DropdownMenuItem(value: a, child: Text(a));
+          }).toList(),
+          onChanged: (_value) {
+            setState(() {
+              _valueChoose = _value.toString();
+              /*if (_valueChoose == "En espera") {
+                state = 2;
+              } else if (_valueChoose == "En proceso") {
+                state = 3;
+              } else {
+                state = 4;
+              }
+              print(state);*/
+              _listOrders = _getOrders();
+              this.loading = false;
+            });
+          },
+          hint: Text(_valueChoose),
+        ),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -116,7 +153,10 @@ class _MainPageState extends State<MainPage> {
                   MaterialPageRoute(builder: (BuildContext context) => App()),
                   (Route<dynamic> route) => false);
             },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
+            child: Text("Log Out",
+                style: TextStyle(
+                  color: Colors.white,
+                )),
           ),
         ],
       ),
@@ -144,6 +184,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(

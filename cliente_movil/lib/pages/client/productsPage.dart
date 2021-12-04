@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constant.dart';
+
 class Product extends StatefulWidget {
   // ignore: non_constant_identifier_names
   final int id_user;
@@ -27,7 +29,8 @@ class _ProductState extends State<Product> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id_user),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -55,7 +58,7 @@ class _MainPageState extends State<MainPage> {
     });
 
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/products"),
+      Uri.parse("$ROUTE_API/products"),
     );
 
     List<ProductView> products = [];
@@ -90,33 +93,55 @@ class _MainPageState extends State<MainPage> {
   void _postOrders(String comment, String state, String delivery_date) async {
     log("Obteniendo prefs...");
     final prefs = await SharedPreferences.getInstance();
+    final msg = jsonEncode(
+        {'comment': comment, 'state': state, 'delivery_date': delivery_date});
     String? posibleToken = prefs.getString("token");
     log("Posible token: $posibleToken");
     if (posibleToken == null) {
       log("No hay token");
     }
     log("Haciendo petición...");
-    await http
-        .post(Uri.parse("http://192.168.100.7:8000/api/orders"),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Authorization': 'Bearer $posibleToken',
-            },
-            body: jsonEncode({
-              "comment": "$comment",
-              "state": "$state",
-              "delivery_date": "$delivery_date",
-            }))
-        .then((response) {
-      print('Status: ${response.statusCode}');
-      print('Body: ${response.body}');
+    Map<String, String> header = {
+      'Content-Type': 'application/json-patch+json',
+      'accept': 'application/json',
+      'Authorization': 'Bearer $posibleToken'
+    };
+    var response = await http.post(Uri.parse("$ROUTE_API/orders"),
+        headers:
+            /*<String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Charset': 'utf-8',
+          'Authorization': 'Bearer $posibleToken',
+        }*/
+            header,
+        body:
+            /*jsonEncode({
+          "comment": comment,
+          "state": state,
+          "delivery_date": delivery_date,
+        })*/
+            msg);
+    if (response.statusCode == 201) {
       var datauser = json.decode(response.body);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       id_order = datauser["id"];
-      print('ID de la orden: $id_order');
-    });
-    Navigator.of(context).push(new MaterialPageRoute(
-      builder: (BuildContext context) => NewOrder(widget.id_user, id_order),
-    ));
+      Navigator.of(context).push(new MaterialPageRoute(
+        builder: (BuildContext context) => NewOrder(widget.id_user, id_order),
+      ));
+    } else {
+      print('Response status: ${response.statusCode}');
+      print(response.body);
+      print("fallo ");
+    }
+    /*.then((response) {
+      //print('Status: ${response.statusCode}');
+      //print('Body: ${response.body}');
+      var datauser = json.decode(json.encode(response.body));
+
+      id_order = datauser["id"];
+      //print('ID de la orden: $id_order');
+    });*/
   }
 
   @override
@@ -140,12 +165,14 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Productos", style: TextStyle(color: Colors.white)),
+        title: Text("Lista", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           ElevatedButton.icon(
               onPressed: () {
-                _postOrders("Sin asignar", "en carrito", "1000-01-01");
+                _postOrders("", "en carrito", "");
               },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
               icon: new Icon(Icons.add_business_outlined),
               label: Text("Nueva orden")),
           TextButton(
@@ -185,6 +212,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
@@ -234,13 +264,15 @@ class _MainPageState extends State<MainPage> {
           ListTile(
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ImagePage(product.img_url)));
+                  builder: (context) => ImagePage(
+                      "https://api-cono-superior-a6loi.ondigitalocean.app/storage/${product.img_url}")));
             },
             title: Text(product.name),
             subtitle: Text(product.description),
             trailing: CircleAvatar(
               radius: 40.0,
-              backgroundImage: NetworkImage(product.img_url),
+              backgroundImage: NetworkImage(
+                  "https://api-cono-superior-a6loi.ondigitalocean.app/storage/${product.img_url}"),
             ),
           ),
           Padding(
@@ -256,6 +288,8 @@ class _MainPageState extends State<MainPage> {
                     "Unidades por paquete: " +
                         product.package_amount.toString(),
                     style: TextStyle(color: Colors.black.withOpacity(0.4))),
+                Text("Textura: " + product.texture,
+                    style: TextStyle(color: Colors.black.withOpacity(0.4)))
               ],
             ),
           ),
@@ -327,6 +361,7 @@ class ImagePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: Colors.black,
       ),
       backgroundColor: Colors.black,

@@ -1,6 +1,6 @@
 class Order {
   final int id;
-  final String comment;
+  final String? comment;
   final String state;
   final UserO userO;
   // ignore: non_constant_identifier_names
@@ -8,7 +8,7 @@ class Order {
   // ignore: non_constant_identifier_names
   final String updated_at;
   // ignore: non_constant_identifier_names
-  final String delivery_date;
+  final String? delivery_date;
 
   Order(this.id, this.comment, this.state, this.userO, this.created_at,
       this.updated_at, this.delivery_date);

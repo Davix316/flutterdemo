@@ -3,14 +3,16 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cliente_movil/models/OrderC.dart';
-import 'package:cliente_movil/pages/client/clientOrderP.dart';
-import 'package:cliente_movil/pages/client/clientPage.dart';
+//import 'package:cliente_movil/pages/client/clientOrderP.dart';
+//import 'package:cliente_movil/pages/client/clientPage.dart';
 import 'package:cliente_movil/pages/client/newOrder.dart';
 import 'package:cliente_movil/pages/client/orderAccept.dart';
 import 'package:cliente_movil/pages/client/productsPage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constant.dart';
 
 class CartProduct extends StatefulWidget {
   // ignore: non_constant_identifier_names
@@ -29,7 +31,8 @@ class _CartProductState extends State<CartProduct> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id_user, widget.id_order),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -69,8 +72,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse(
-          "http://192.168.100.7:8000/api/cart/products/${widget.id_user}"),
+      Uri.parse("$ROUTE_API/cart/products/${widget.id_user}"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -86,7 +88,7 @@ class _MainPageState extends State<MainPage> {
       print(jsonData);
 
       for (var item in jsonData) {
-        clientordersC.add(OrderC(item["name"], item["texture"],
+        clientordersC.add(OrderC(item["name"], item["package_amount"],
             PivotC(item["pivot"]["order_id"], item["pivot"]["product_units"])));
       }
       //print(response.body);
@@ -112,7 +114,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http.delete(
-      Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+      Uri.parse("$ROUTE_API/orders/$idOrder"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -153,6 +155,8 @@ class _MainPageState extends State<MainPage> {
                       OrderAccept(widget.id_user, widget.id_order),
                 ));
               },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
               icon: new Icon(Icons.check_circle_outline_rounded),
               label: Text("Solicitar")),
           IconButton(
@@ -162,14 +166,42 @@ class _MainPageState extends State<MainPage> {
                       NewOrder(widget.id_user, widget.id_order),
                 ));
               },
+              color: Colors.white,
               icon: new Icon(Icons.add_shopping_cart_outlined)),
           ElevatedButton.icon(
               onPressed: () {
-                _deleteOrders(widget.id_order);
-                Navigator.of(context).push(new MaterialPageRoute(
-                  builder: (BuildContext context) => Product(widget.id_user),
-                ));
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                          title: Text("Cancelar orden"),
+                          content: Text(
+                              "¿Estás seguro? Se eliminará la orden y todos los productos seleccionados."),
+                          actions: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop();
+                                },
+                                child: Text("No",
+                                    style:
+                                        TextStyle(color: Colors.indigo[900]))),
+                            ElevatedButton(
+                                onPressed: () {
+                                  _deleteOrders(widget.id_order);
+                                  Navigator.of(context, rootNavigator: true)
+                                      .push(new MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              Product(
+                                                widget.id_user,
+                                              )));
+                                },
+                                child: Text("Sí",
+                                    style: TextStyle(color: Colors.red))),
+                          ],
+                        ));
               },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
               icon: new Icon(Icons.cancel),
               label: Text("Cancelar")),
         ],
@@ -194,10 +226,13 @@ class _MainPageState extends State<MainPage> {
                 );
               },
             ),
-      drawer: Drawer(
+      /*drawer: Drawer(
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
@@ -230,7 +265,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-      ),
+      ),*/
     );
   }
 
@@ -245,9 +280,10 @@ class _MainPageState extends State<MainPage> {
           ListTile(
             //leading: Icon(Icons.person),
             title: Text(clientOrderC.name),
-            subtitle: Text("Textura: " + clientOrderC.texture),
-            trailing: Text(
-                "Cantidad: " + clientOrderC.pivotC.product_units.toString()),
+            subtitle: Text("Unidades por paquete: " +
+                clientOrderC.package_amount.toString()),
+            trailing: Text("Paquetes solicitados: " +
+                clientOrderC.pivotC.product_units.toString()),
           ),
         ],
       )));

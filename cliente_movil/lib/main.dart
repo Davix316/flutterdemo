@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'constant.dart';
+
 void main() => runApp(App());
 
 class App extends StatelessWidget {
@@ -14,6 +16,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //Direccion de pantalla
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       //Estilo de la aplicacion
       title: "Cono Superior",
@@ -30,6 +37,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late int id;
   bool _isLoading = false;
+  late bool _passwordVisible; //Visibilidad de contraseña
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +46,12 @@ class _MyAppState extends State<MyApp> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Colors.blue, Colors.teal],
+            /*gradient: LinearGradient(
+              colors: [Colors.amber, Colors.yellow],
               begin: Alignment.topCenter,
-              end: Alignment.bottomCenter),
-        ),
+              end: Alignment.bottomCenter),*/
+            image: DecorationImage(
+                image: AssetImage("assets/sign_ing.jpeg"), fit: BoxFit.cover)),
         child: _isLoading
             ? Center(child: CircularProgressIndicator())
             : ListView(
@@ -56,13 +65,19 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  @override
+  void initState() {
+    _passwordVisible = false;
+    super.initState();
+  }
+
   signIn(String email, pass) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     Map data = {'email': email, 'password': pass};
+    // ignore: avoid_init_to_null
     var jsonResponse = null;
 
-    var response = await http
-        .post(Uri.parse("http://192.168.100.7:8000/api/login"), body: data);
+    var response = await http.post(Uri.parse("$ROUTE_API/login"), body: data);
     if (response.statusCode == 200) {
       var datauser = json.decode(response.body);
       jsonResponse = json.decode(response.body);
@@ -90,6 +105,23 @@ class _MyAppState extends State<MyApp> {
         _isLoading = false;
       });
       print(response.body);
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                content: Text("Email o contraseña incorrectos.",
+                    style: TextStyle(color: Colors.white)),
+                backgroundColor: Colors.amber[400],
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                      child: Text("Intentar nuevamente",
+                          style: TextStyle(color: Colors.blueGrey)))
+                ],
+              ));
+      emailController.text = "";
+      passwordController.text = "";
     }
   }
 
@@ -108,7 +140,7 @@ class _MyAppState extends State<MyApp> {
                 });
                 signIn(emailController.text, passwordController.text);
               },
-        child: Text("Sign In", style: TextStyle(color: Colors.white70)),
+        child: Text("Ingresar", style: TextStyle(color: Colors.white70)),
       ),
     );
   }
@@ -124,28 +156,43 @@ class _MyAppState extends State<MyApp> {
           TextFormField(
             controller: emailController,
             cursorColor: Colors.white,
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: Colors.black),
             decoration: InputDecoration(
-              icon: Icon(Icons.email, color: Colors.white70),
+              icon: Icon(Icons.email, color: Colors.black),
               hintText: "Email",
               border: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.white70)),
-              hintStyle: TextStyle(color: Colors.white70),
+              hintStyle: TextStyle(color: Colors.black),
             ),
           ),
           SizedBox(height: 30.0),
           TextFormField(
             controller: passwordController,
             cursorColor: Colors.white,
-            obscureText: true,
-            style: TextStyle(color: Colors.white70),
+            obscureText: !_passwordVisible,
+            style: TextStyle(color: Colors.black),
             decoration: InputDecoration(
-              icon: Icon(Icons.lock, color: Colors.white70),
-              hintText: "Password",
-              border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white70)),
-              hintStyle: TextStyle(color: Colors.white70),
-            ),
+                icon: Icon(Icons.lock, color: Colors.black),
+                hintText: "Contraseña",
+                border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white70)),
+                hintStyle: TextStyle(color: Colors.black),
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                suffixIcon: GestureDetector(
+                  onLongPress: () {
+                    setState(() {
+                      _passwordVisible = true;
+                    });
+                  },
+                  onLongPressUp: () {
+                    setState(() {
+                      _passwordVisible = false;
+                    });
+                  },
+                  child: Icon(_passwordVisible
+                      ? Icons.visibility
+                      : Icons.visibility_off),
+                )),
           ),
         ],
       ),
@@ -154,13 +201,14 @@ class _MyAppState extends State<MyApp> {
 
   Container headerSection() {
     return Container(
-      margin: EdgeInsets.only(top: 50.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      child: Text("Cono Superior",
+      margin: EdgeInsets.only(top: 70.0),
+      padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+      child: Text("",
           style: TextStyle(
-              color: Colors.white70,
-              fontSize: 40.0,
-              fontWeight: FontWeight.bold)),
+            color: Colors.white,
+            fontSize: 40.0,
+            fontWeight: FontWeight.bold,
+          )),
     );
   }
 }

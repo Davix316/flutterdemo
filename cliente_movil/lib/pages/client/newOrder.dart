@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/Product.dart';
 import 'package:cliente_movil/pages/client/cartProduct.dart';
-import 'package:cliente_movil/pages/client/clientOrderP.dart';
-import 'package:cliente_movil/pages/client/clientPage.dart';
+//import 'package:cliente_movil/pages/client/clientOrderP.dart';
+//import 'package:cliente_movil/pages/client/clientPage.dart';
 import 'package:cliente_movil/pages/client/productsPage.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constant.dart';
 
 class NewOrder extends StatefulWidget {
   // ignore: non_constant_identifier_names
@@ -30,7 +31,8 @@ class _NewOrderState extends State<NewOrder> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id_user, widget.id_order),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -66,7 +68,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");*/
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/products"),
+      Uri.parse("$ROUTE_API/products"),
       /*headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -100,6 +102,7 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  //Función agregar productos a carrito
   // ignore: non_constant_identifier_names
   void _postCart(int product_units, int order_id, int product_id) async {
     log("Obteniendo prefs...");
@@ -111,7 +114,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http
-        .post(Uri.parse("http://192.168.100.7:8000/api/carts"),
+        .post(Uri.parse("$ROUTE_API/carts"),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $posibleToken',
@@ -124,6 +127,33 @@ class _MainPageState extends State<MainPage> {
         .then((response) {
       print('Status: ${response.statusCode}');
       print('Body: ${response.body}');
+    });
+  }
+
+  //Funcion eliminar orden
+  void _deleteOrders(
+    int idOrder,
+  ) async {
+    setState(() {
+      loading = true;
+    });
+    log("Obteniendo prefs...");
+    final prefs = await SharedPreferences.getInstance();
+    String? posibleToken = prefs.getString("token");
+    log("Posible token: $posibleToken");
+    if (posibleToken == null) {
+      log("No hay token");
+    }
+    log("Haciendo petición...");
+    await http.delete(
+      Uri.parse("$ROUTE_API/orders/$idOrder"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $posibleToken',
+      },
+    ).then((response) {
+      print('Status: ${response.statusCode}');
+      //print('Body: ${response.body}');
     });
   }
 
@@ -149,7 +179,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Productos", style: TextStyle(color: Colors.white)),
+        title: Text("Lista", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           ElevatedButton.icon(
               onPressed: () {
@@ -158,17 +188,46 @@ class _MainPageState extends State<MainPage> {
                       CartProduct(widget.id_user, widget.id_order),
                 ));
               },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
               icon: new Icon(Icons.shopping_cart_outlined),
               label: Text("Carrito")),
-          TextButton(
-            onPressed: () {
-              // ignore: deprecated_member_use
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (BuildContext context) => App()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
-          ),
+          ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                          title: Text("Cancelar orden"),
+                          content: Text(
+                              "¿Estás seguro? Se eliminará la orden y todos los productos seleccionados."),
+                          actions: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop();
+                                },
+                                child: Text("No",
+                                    style:
+                                        TextStyle(color: Colors.indigo[900]))),
+                            ElevatedButton(
+                                onPressed: () {
+                                  _deleteOrders(widget.id_order);
+                                  Navigator.of(context, rootNavigator: true)
+                                      .push(new MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              Product(
+                                                widget.id_user,
+                                              )));
+                                },
+                                child: Text("Sí",
+                                    style: TextStyle(color: Colors.red))),
+                          ],
+                        ));
+              },
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber)),
+              icon: new Icon(Icons.cancel),
+              label: Text("Cancelar")),
         ],
       ),
       body: Container(
@@ -193,10 +252,13 @@ class _MainPageState extends State<MainPage> {
                 },
               ),
       ),
-      drawer: Drawer(
+      /*drawer: Drawer(
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
@@ -229,7 +291,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-      ),
+      ),*/
     );
   }
 
@@ -246,13 +308,15 @@ class _MainPageState extends State<MainPage> {
           ListTile(
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ImagePage(product.img_url)));
+                  builder: (context) => ImagePage(
+                      "https://api-cono-superior-a6loi.ondigitalocean.app/storage/${product.img_url}")));
             },
             title: Text(product.name),
             subtitle: Text(product.description),
             trailing: CircleAvatar(
               radius: 40.0,
-              backgroundImage: NetworkImage(product.img_url),
+              backgroundImage: NetworkImage(
+                  "https://api-cono-superior-a6loi.ondigitalocean.app/storage/${product.img_url}"),
             ),
           ),
           Padding(
@@ -267,6 +331,8 @@ class _MainPageState extends State<MainPage> {
                 Text(
                     "Unidades por paquete: " +
                         product.package_amount.toString(),
+                    style: TextStyle(color: Colors.black.withOpacity(0.4))),
+                Text("Textura: " + product.texture,
                     style: TextStyle(color: Colors.black.withOpacity(0.4))),
                 Container(
                   width: 100,
@@ -293,7 +359,6 @@ class _MainPageState extends State<MainPage> {
                   onPressed: () {
                     _postCart(int.parse(controllerUnits.text), widget.id_order,
                         product.id);
-
                     showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
@@ -309,6 +374,7 @@ class _MainPageState extends State<MainPage> {
                                             color: Colors.indigo[900])))
                               ],
                             ));
+                    controllerUnits.text = "";
                   },
                   child: Text("Agregar a carrito")),
               const SizedBox(width: 8),

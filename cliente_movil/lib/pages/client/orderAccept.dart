@@ -3,16 +3,18 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
 
-import 'package:cliente_movil/pages/client/clientOrderP.dart';
+//import 'package:cliente_movil/pages/client/clientOrderP.dart';
 import 'package:cliente_movil/pages/client/clientPage.dart';
 
-import 'package:cliente_movil/main.dart';
+//import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/pages/client/productsPage.dart';
 
 import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+
+import '../../constant.dart';
 
 class OrderAccept extends StatefulWidget {
   // ignore: non_constant_identifier_names
@@ -32,7 +34,8 @@ class _OrderAcceptState extends State<OrderAccept> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.user_id, widget.order_id),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -79,7 +82,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http
-        .put(Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+        .put(Uri.parse("$ROUTE_API/orders/$idOrder"),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $posibleToken',
@@ -111,7 +114,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http.delete(
-      Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+      Uri.parse("$ROUTE_API/orders/$idOrder"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -149,7 +152,7 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Pedido", style: TextStyle(color: Colors.white)),
-        actions: <Widget>[
+        /*actions: <Widget>[
           TextButton(
             onPressed: () {
               // ignore: deprecated_member_use
@@ -159,7 +162,7 @@ class _MainPageState extends State<MainPage> {
             },
             child: Text("Log Out", style: TextStyle(color: Colors.white)),
           ),
-        ],
+        ],*/
       ),
       body: Form(
         child: ListView(
@@ -204,8 +207,7 @@ class _MainPageState extends State<MainPage> {
                 Row(
                   children: [
                     ElevatedButton(
-                        style:
-                            ElevatedButton.styleFrom(primary: Colors.blue[100]),
+                        style: ElevatedButton.styleFrom(primary: Colors.amber),
                         onPressed: controllerComment.text == ""
                             ? null
                             : () {
@@ -213,20 +215,38 @@ class _MainPageState extends State<MainPage> {
                                   loading = true;
                                 });
 
-                                _updateOrders(
-                                    widget.order_id,
-                                    controllerComment.text,
-                                    "en espera",
-                                    "1000-01-01");
-                                Navigator.of(context)
-                                    .push(new MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      Client(user_id),
-                                ));
+                                _updateOrders(widget.order_id,
+                                    controllerComment.text, "en espera", "");
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                          title: Text("Pedido realizado"),
+                                          content: Text(
+                                              "El pedido se ha realizado correctamente."),
+                                          actions: [
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context,
+                                                          rootNavigator: true)
+                                                      .push(
+                                                          new MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        Client(user_id),
+                                                  ));
+                                                },
+                                                child: Text("OK",
+                                                    style: TextStyle(
+                                                        color: Colors
+                                                            .indigo[900])))
+                                          ],
+                                        ));
                               },
                         child: Text("Solicitar",
-                            style: TextStyle(color: Colors.indigo[900]))),
+                            style: TextStyle(color: Colors.white))),
                     ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            primary: Colors.amber[100]),
                         onPressed: () {
                           showDialog(
                               context: context,
@@ -269,7 +289,7 @@ class _MainPageState extends State<MainPage> {
           ],
         ),
       ),
-      drawer: Drawer(
+      /*drawer: Drawer(
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
@@ -305,7 +325,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-      ),
+      ),*/
     );
   }
 }

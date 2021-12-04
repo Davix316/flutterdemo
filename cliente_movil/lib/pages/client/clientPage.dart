@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../../constant.dart';
+
 class Client extends StatefulWidget {
   final int id;
   Client(this.id);
@@ -26,7 +28,8 @@ class _ClientState extends State<Client> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -42,6 +45,8 @@ class _MainPageState extends State<MainPage> {
   // ignore: non_constant_identifier_names
   late int id_user = widget.id;
   late Future<List<Order>> _listOrders;
+  //variable return de pagina
+  bool num = true;
 
   bool loading = false;
   late SharedPreferences sharedPreferences;
@@ -59,8 +64,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse(
-          "http://192.168.100.7:8000/api/orders/filtered/2/user/$id_user"),
+      Uri.parse("$ROUTE_API/orders/filtered/2/user/$id_user"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -78,13 +82,13 @@ class _MainPageState extends State<MainPage> {
       for (var item in jsonData["data"]) {
         orders.add(Order(
             item["id"],
-            item["comment"],
+            item["comment"] ?? "Sin asignar",
             item["state"],
             UserO(item["user"]["name"], item["user"]["business_name"],
                 item["user"]["phone"], item["user"]["address"]),
             item["created_at"],
             item["updated_at"],
-            item["delivery_date"]));
+            item["delivery_date"] ?? "Sin asignar"));
       }
       //print(response.body);
       return orders;
@@ -114,7 +118,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cono Superior", style: TextStyle(color: Colors.white)),
+        title: Text("En espera", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -151,6 +155,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(
@@ -230,11 +237,12 @@ class _MainPageState extends State<MainPage> {
               TextButton(
                   onPressed: () {
                     //print(order.id);
+
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                ClientOrderC(id_user, order.id)));
+                                ClientOrderC(id_user, order.id, num)));
                   },
                   child: Text("Productos")),
               const SizedBox(width: 8),

@@ -1,10 +1,11 @@
 class OrderC {
   //final int id;
   final String name; //Informacion del producto
-  final String texture;
+  // ignore: non_constant_identifier_names
+  final int package_amount;
   final PivotC pivotC;
 
-  OrderC(this.name, this.texture, this.pivotC);
+  OrderC(this.name, this.package_amount, this.pivotC);
 }
 
 //Informacion de la tabla cart

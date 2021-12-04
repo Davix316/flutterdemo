@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cliente_movil/main.dart';
+//import 'package:cliente_movil/main.dart';
 import 'package:cliente_movil/models/EmployeeP.dart';
 import 'package:cliente_movil/pages/clients.dart';
 import 'package:cliente_movil/pages/employees.dart';
@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constant.dart';
 import 'adminPage.dart';
 
 class ProductionE extends StatefulWidget {
@@ -25,7 +26,8 @@ class _ProductionEState extends State<ProductionE> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -59,8 +61,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse(
-          "http://192.168.100.7:8000/api/employee/$id_employee/production"),
+      Uri.parse("$ROUTE_API/employee/$id_employee/production"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -113,17 +114,16 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Detalle", style: TextStyle(color: Colors.white)),
+        title: Text("Producción", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              // ignore: deprecated_member_use
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (BuildContext context) => App()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
-          ),
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(new MaterialPageRoute(
+                  builder: (BuildContext context) => Employees(),
+                ));
+              },
+              color: Colors.white,
+              icon: new Icon(Icons.keyboard_return_outlined)),
         ],
       ),
       body: (loading)
@@ -150,6 +150,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(

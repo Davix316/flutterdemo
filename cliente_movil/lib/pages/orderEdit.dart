@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../constant.dart';
 import 'adminPage.dart';
 import 'clients.dart';
 
@@ -33,7 +34,8 @@ class _OrderEState extends State<OrderE> {
       debugShowCheckedModeBanner: false,
       home: MainPage(
           widget.id, widget.comment, widget.state, widget.delivery_date),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -77,7 +79,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http
-        .put(Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+        .put(Uri.parse("$ROUTE_API/orders/$idOrder"),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $posibleToken',
@@ -144,7 +146,6 @@ class _MainPageState extends State<MainPage> {
                     maxLines: 5,
                     enabled: false,
                     decoration: new InputDecoration(
-                      hintText: "Comentario",
                       labelText: "Comentario",
                     ),
                   ),
@@ -210,9 +211,28 @@ class _MainPageState extends State<MainPage> {
                             });
                             _updateOrders(widget.id, controllerComment.text,
                                 _valueChoose, dateinput.text);
-                            Navigator.of(context).push(new MaterialPageRoute(
-                              builder: (BuildContext context) => Admin(),
-                            ));
+                            showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                      title: Text("Pedido actualizado"),
+                                      content: Text(
+                                          "Pedido actualizado correctamente."),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context,
+                                                      rootNavigator: true)
+                                                  .push(new MaterialPageRoute(
+                                                builder:
+                                                    (BuildContext context) =>
+                                                        Admin(),
+                                              ));
+                                            },
+                                            child: Text("OK",
+                                                style: TextStyle(
+                                                    color: Colors.indigo[900])))
+                                      ],
+                                    ));
                           },
                     child: Text("Actualizar",
                         style: TextStyle(color: Colors.indigo[900])))
@@ -225,6 +245,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(

@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../../constant.dart';
+
 class ClientOrderE extends StatefulWidget {
   // ignore: non_constant_identifier_names
   final int user_id;
@@ -36,7 +38,8 @@ class _ClientOrderEState extends State<ClientOrderE> {
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.user_id, widget.id, widget.comment, widget.state,
           widget.delivery_date),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -85,7 +88,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http
-        .put(Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+        .put(Uri.parse("$ROUTE_API/orders/$idOrder"),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $posibleToken',
@@ -117,7 +120,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     await http.delete(
-      Uri.parse("http://192.168.100.7:8000/api/orders/$idOrder"),
+      Uri.parse("$ROUTE_API/orders/$idOrder"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -248,12 +251,35 @@ class _MainPageState extends State<MainPage> {
                                       ElevatedButton(
                                           onPressed: () {
                                             _deleteOrders(widget.id);
-                                            Navigator.of(context,
-                                                    rootNavigator: true)
-                                                .push(new MaterialPageRoute(
-                                              builder: (BuildContext context) =>
-                                                  Client(user_id),
-                                            ));
+                                            showDialog(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                      title: Text(
+                                                          "Pedido eliminado"),
+                                                      content: Text(
+                                                          "Pedido eliminado correctamente."),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context,
+                                                                      rootNavigator:
+                                                                          true)
+                                                                  .push(
+                                                                      new MaterialPageRoute(
+                                                                builder: (BuildContext
+                                                                        context) =>
+                                                                    Client(
+                                                                        user_id),
+                                                              ));
+                                                            },
+                                                            child: Text("OK",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                            .indigo[
+                                                                        900])))
+                                                      ],
+                                                    ));
                                           },
                                           child: Text("Eliminar",
                                               style: TextStyle(
@@ -274,6 +300,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Cliente'),
               // decoration: new BoxDecoration(

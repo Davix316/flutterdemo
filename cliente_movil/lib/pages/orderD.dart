@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cliente_movil/main.dart';
+//import 'package:cliente_movil/main.dart';
 //import 'package:cliente_movil/models/Order.dart';
 import 'package:cliente_movil/models/OrderC.dart';
 import 'package:cliente_movil/pages/clients.dart';
@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constant.dart';
 import 'adminPage.dart';
 
 class OrderD extends StatefulWidget {
@@ -26,7 +27,8 @@ class _OrderDState extends State<OrderD> {
       title: "Cono Superior",
       debugShowCheckedModeBanner: false,
       home: MainPage(widget.id),
-      theme: ThemeData(accentColor: Colors.white70),
+      theme: ThemeData(
+          accentColor: Colors.white70, primaryColor: Colors.amber[600]),
     );
   }
 }
@@ -61,7 +63,7 @@ class _MainPageState extends State<MainPage> {
     }
     log("Haciendo petición...");
     final response = await http.get(
-      Uri.parse("http://192.168.100.7:8000/api/orders/$id_order/products"),
+      Uri.parse("$ROUTE_API/orders/$id_order/products"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $posibleToken',
@@ -77,7 +79,7 @@ class _MainPageState extends State<MainPage> {
       print(jsonData);
 
       for (var item in jsonData) {
-        ordersC.add(OrderC(item["name"], item["texture"],
+        ordersC.add(OrderC(item["name"], item["package_amount"],
             PivotC(item["pivot"]["order_id"], item["pivot"]["product_units"])));
       }
       //print(response.body);
@@ -111,15 +113,14 @@ class _MainPageState extends State<MainPage> {
       appBar: AppBar(
         title: Text("Detalle", style: TextStyle(color: Colors.white)),
         actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              // ignore: deprecated_member_use
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (BuildContext context) => App()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text("Log Out", style: TextStyle(color: Colors.white)),
-          ),
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(new MaterialPageRoute(
+                  builder: (BuildContext context) => Admin(),
+                ));
+              },
+              color: Colors.white,
+              icon: new Icon(Icons.keyboard_return_outlined)),
         ],
       ),
       body: (loading)
@@ -146,6 +147,9 @@ class _MainPageState extends State<MainPage> {
         child: new ListView(
           children: <Widget>[
             new UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/menu.jpg"), fit: BoxFit.cover)),
               accountName: new Text('Menú Principal'),
               accountEmail: new Text('Administrador'),
               // decoration: new BoxDecoration(
@@ -204,9 +208,10 @@ class _MainPageState extends State<MainPage> {
           ListTile(
             //leading: Icon(Icons.person),
             title: Text(orderC.name),
-            subtitle: Text("Textura: " + orderC.texture),
-            trailing:
-                Text("Cantidad: " + orderC.pivotC.product_units.toString()),
+            subtitle: Text(
+                "Unidades por paquete: " + orderC.package_amount.toString()),
+            trailing: Text("Paquetes solicitados: " +
+                orderC.pivotC.product_units.toString()),
           ),
         ],
       )));
