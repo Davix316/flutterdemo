@@ -251,12 +251,35 @@ class _MainPageState extends State<MainPage> {
                                       ElevatedButton(
                                           onPressed: () {
                                             _deleteOrders(widget.id);
-                                            Navigator.of(context,
-                                                    rootNavigator: true)
-                                                .push(new MaterialPageRoute(
-                                              builder: (BuildContext context) =>
-                                                  Client(user_id),
-                                            ));
+                                            showDialog(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                      title: Text(
+                                                          "Pedido eliminado"),
+                                                      content: Text(
+                                                          "Pedido eliminado correctamente."),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context,
+                                                                      rootNavigator:
+                                                                          true)
+                                                                  .push(
+                                                                      new MaterialPageRoute(
+                                                                builder: (BuildContext
+                                                                        context) =>
+                                                                    Client(
+                                                                        user_id),
+                                                              ));
+                                                            },
+                                                            child: Text("OK",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                            .indigo[
+                                                                        900])))
+                                                      ],
+                                                    ));
                                           },
                                           child: Text("Eliminar",
                                               style: TextStyle(

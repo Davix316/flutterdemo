@@ -308,13 +308,15 @@ class _MainPageState extends State<MainPage> {
           ListTile(
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ImagePage(product.img_url)));
+                  builder: (context) => ImagePage(
+                      "https://api-cono-superior-a6loi.ondigitalocean.app/storage/${product.img_url}")));
             },
             title: Text(product.name),
             subtitle: Text(product.description),
             trailing: CircleAvatar(
               radius: 40.0,
-              backgroundImage: NetworkImage(product.img_url),
+              backgroundImage: NetworkImage(
+                  "https://api-cono-superior-a6loi.ondigitalocean.app/storage/${product.img_url}"),
             ),
           ),
           Padding(
@@ -329,6 +331,8 @@ class _MainPageState extends State<MainPage> {
                 Text(
                     "Unidades por paquete: " +
                         product.package_amount.toString(),
+                    style: TextStyle(color: Colors.black.withOpacity(0.4))),
+                Text("Textura: " + product.texture,
                     style: TextStyle(color: Colors.black.withOpacity(0.4))),
                 Container(
                   width: 100,

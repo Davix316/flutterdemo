@@ -88,7 +88,7 @@ class _MainPageState extends State<MainPage> {
       print(jsonData);
 
       for (var item in jsonData) {
-        clientordersC.add(OrderC(item["name"], item["texture"],
+        clientordersC.add(OrderC(item["name"], item["package_amount"],
             PivotC(item["pivot"]["order_id"], item["pivot"]["product_units"])));
       }
       //print(response.body);
@@ -280,9 +280,10 @@ class _MainPageState extends State<MainPage> {
           ListTile(
             //leading: Icon(Icons.person),
             title: Text(clientOrderC.name),
-            subtitle: Text("Textura: " + clientOrderC.texture),
-            trailing: Text(
-                "Cantidad: " + clientOrderC.pivotC.product_units.toString()),
+            subtitle: Text("Unidades por paquete: " +
+                clientOrderC.package_amount.toString()),
+            trailing: Text("Paquetes solicitados: " +
+                clientOrderC.pivotC.product_units.toString()),
           ),
         ],
       )));

@@ -217,11 +217,30 @@ class _MainPageState extends State<MainPage> {
 
                                 _updateOrders(widget.order_id,
                                     controllerComment.text, "en espera", "");
-                                Navigator.of(context)
-                                    .push(new MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      Client(user_id),
-                                ));
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                          title: Text("Pedido realizado"),
+                                          content: Text(
+                                              "El pedido se ha realizado correctamente."),
+                                          actions: [
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context,
+                                                          rootNavigator: true)
+                                                      .push(
+                                                          new MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        Client(user_id),
+                                                  ));
+                                                },
+                                                child: Text("OK",
+                                                    style: TextStyle(
+                                                        color: Colors
+                                                            .indigo[900])))
+                                          ],
+                                        ));
                               },
                         child: Text("Solicitar",
                             style: TextStyle(color: Colors.white))),

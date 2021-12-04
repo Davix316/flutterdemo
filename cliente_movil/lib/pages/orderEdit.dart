@@ -211,9 +211,28 @@ class _MainPageState extends State<MainPage> {
                             });
                             _updateOrders(widget.id, controllerComment.text,
                                 _valueChoose, dateinput.text);
-                            Navigator.of(context).push(new MaterialPageRoute(
-                              builder: (BuildContext context) => Admin(),
-                            ));
+                            showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                      title: Text("Pedido actualizado"),
+                                      content: Text(
+                                          "Pedido actualizado correctamente."),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context,
+                                                      rootNavigator: true)
+                                                  .push(new MaterialPageRoute(
+                                                builder:
+                                                    (BuildContext context) =>
+                                                        Admin(),
+                                              ));
+                                            },
+                                            child: Text("OK",
+                                                style: TextStyle(
+                                                    color: Colors.indigo[900])))
+                                      ],
+                                    ));
                           },
                     child: Text("Actualizar",
                         style: TextStyle(color: Colors.indigo[900])))
